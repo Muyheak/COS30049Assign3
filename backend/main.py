@@ -7,38 +7,35 @@ import joblib
 import os
 import hashlib
 from feature_extractor import extract_features
-
-# ---- SlowAPI (rate limiting) ----
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000")
-EXPECTED_HASH = None
-if os.path.exists(".env"):
-    with open(".env", "r") as f:
-        for line in f:
-            if line.startswith("MODEL_HASH="):
-                EXPECTED_HASH = line.strip().split("=")[1]
-                break
-if not EXPECTED_HASH:
-    EXPECTED_HASH = os.environ.get("MODEL_HASH")
+EXPECTED_HASH = os.environ.get("MODEL_HASH")
 
-app = FastAPI(title="Phishing URL Detector")
+
+app = FastAPI(
+    title="Phishing URL Detector",
+    description=(
+        "This takes a URL and extracts the features and returns the phishing result with confidence. Its rate is limited to 10 requests a minute per IP."
+    ),
+    version="1.0.0",
+)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_ORIGIN],
     allow_methods=["POST", "GET"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type"],
 )
 
-# ---- Rate limiter setup ----
+#  The rate limiter is keyed by client IP, so no user accounts available 
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# ---- Safe model loading: check hash BEFORE loading ----
+# This loads the model that's verified, and it raises an error message if the model file hash doesn't match the recorded hash
 def load_model_safely():
     if not EXPECTED_HASH:
         raise RuntimeError(
@@ -54,18 +51,23 @@ def load_model_safely():
         )
     return joblib.load("model.pkl")
 
+# It loads once during startup, if the hash is wrong, it exits before uvicorn accepts any request so that it prevents any risk from unverified models
 MODEL = load_model_safely()
 
 
 class URLRequest(BaseModel):
-    url: str = Field(min_length=1, max_length=2048)
+    url: str = Field(
+        min_length=1, 
+        max_length=2048,
+        description="URL to classify:",
+        )
 
 
 class URLResponse(BaseModel):
-    label: str
-    confidence: float
+    label: str = Field(description="'0' = benign, '1' = phishing")
+    confidence: float = Field(description="Model confidence, 0.0 to 1.0")
 
-
+# These three exception handlers are so every error returns the same shape:
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
@@ -89,13 +91,29 @@ async def generic_handler(request: Request, exc: Exception):
     )
 
 
-@app.get("/health")
+@app.get(
+        "/health",
+        summary="Health check",
+        description="Returns 'ok' when the API is up.",
+    )
 def health():
     return {"status": "ok"}
 
 
-@app.post("/predict", response_model=URLResponse)
+@app.post(
+        "/predict", 
+        response_model=URLResponse,
+        summary="Predict if a user is phishing or benign",
+        description=(
+            "Extracts the 16 features from the URL and it returns a predict label and confidence. The rate is limited to 10 requests per minute per IP." 
+        ),
+        response_description="Label ('0' or '1') and confidence",
+        )
+
+# The limiter blocks flooding attacks by limiting requests to only 10 per minute, because thats 3-5x what a normal user submits. 
 @limiter.limit("10/minute")
+
+# We use regular def for this one because the model does the calculation, while FastAPI runs in the background and it doesn't freeze the other requests like/health
 def predict(req: URLRequest, request: Request):
     try:
         feats = extract_features(req.url)
@@ -104,4 +122,4 @@ def predict(req: URLRequest, request: Request):
         return URLResponse(label=label, confidence=float(proba.max()))
     except Exception as e:
         print(f"prediction failed: {e}")
-        raise HTTPException(status_code=400, detail="Could not analyse this URL")
+        raise HTTPException(status_code=400, detail="This URL could not be analyzed")

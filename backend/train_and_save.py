@@ -19,7 +19,13 @@ X = data[FEATURES]
 y = data["label"]
 
 print("Training Random Forest model...")
-model = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
+model = RandomForestClassifier(
+    n_estimators=100, 
+    n_jobs=-1, 
+    random_state=42, 
+    class_weight="balanced_subsample",
+    max_depth=15,
+    )
 model.fit(X, y)
 
 print("Saving model to model.pkl...")
