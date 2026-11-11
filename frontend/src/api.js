@@ -1,18 +1,35 @@
 // All back-end calls live in this one file.
-// FAKE version for now: when the back end is ready, only this
-// function changes (to a fetch call to REACT_APP_API_URL).
+
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+
 export async function checkUrl(url) {
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // pretend to wait
-  
-    // Type "fail" in a URL to test the error state.
-    if (url.includes('fail')) {
-      throw new Error('Could not reach the server. Please try again.');
-    }
-  
-    const looksPhishy = url.includes('login') || url.includes('verify');
-    return {
-      url,
-      label: looksPhishy ? 'phishing' : 'legitimate',
-      confidence: looksPhishy ? 0.93 : 0.88,
-    };
+  let response;
+  try {
+    response = await fetch(`${API_URL}/predict`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+  } catch (networkErr) {
+    throw new Error("Could not reach the server, please try again.");
   }
+
+  if (response.status === 429) {
+    throw new Error("Too many requests, please wait a minute and try again.");
+  }
+
+  if (response.status === 422) {
+    throw new Error("Please enter a valid URL.");
+  }
+
+  if (!response.ok) {
+    throw new Error("Could not check this URL, please try again.");
+  }
+
+  const data = await response.json();
+  return {
+    url,
+    label: data.label === "1" ? "phishing" : "legitimate",
+    confidence: data.confidence,
+  };
+}
