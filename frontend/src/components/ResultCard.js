@@ -13,8 +13,8 @@ export default function ResultCard({ result }) {
         {/* The result is the biggest element on the screen. */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: colour }}>
           {isPhishing
-            ? <WarningAmberIcon sx={{ fontSize: 56 }} />
-            : <CheckCircleIcon sx={{ fontSize: 56 }} />}
+            ? <WarningAmberIcon sx={{ fontSize: 35 }} />
+            : <CheckCircleIcon sx={{ fontSize: 35 }} />}
           <Typography variant="h1" component="p">
             {isPhishing ? 'Phishing' : 'Legitimate'}
           </Typography>

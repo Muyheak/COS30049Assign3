@@ -1,13 +1,12 @@
 import { createTheme } from '@mui/material/styles';
 
-// One theme for the whole app: every colour, font and corner radius
-// is defined here so the design stays consistent.
+// One theme for the whole app: colours, fonts and shapes are defined here only.
 const theme = createTheme({
   palette: {
-    primary: { main: '#1a4fd6' },   // buttons, links, focus
-    error: { main: '#c62828' },     // phishing results, error messages
-    success: { main: '#2e7d32' },   // legitimate results
-    background: { default: '#f5f7fb' },
+    primary: { main: '#1a4fd6' },
+    error: { main: '#c62828' },
+    success: { main: '#2e7d32' },
+    background: { default: '#e8eefc', paper: '#ffffff' },
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -15,6 +14,12 @@ const theme = createTheme({
     h2: { fontSize: '1.5rem', fontWeight: 600 },
   },
   shape: { borderRadius: 12 },
+  components: {
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: { root: { textTransform: 'none', fontWeight: 600 } },
+    },
+  },
 });
 
 export default theme;
