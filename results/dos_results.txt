@@ -1,0 +1,50 @@
+########## DOS_DEFENCE=off
+--- run 1
+Victim health with NO attack   : n=37  median=2.2 ms  p95=5.3 ms  max=25.8 ms  status={200: 37}
+Attack: one 150 MB body -> 422, answered in 721 ms
+Victim health DURING attack    : n=28  median=2.2 ms  p95=301.6 ms  max=527.8 ms  status={200: 28}
+Victim health with NO attack   : n=37  median=2.2 ms  p95=5.6 ms  max=24.5 ms  status={200: 37}
+Attack: 3000 /check requests, 300 at once, 16.3 s -> {200: 3000}
+        attacker median wait 947 ms
+Victim health DURING attack    : n=238  median=5.3 ms  p95=62.6 ms  max=1166.0 ms  status={200: 238}
+--- run 2
+Victim health with NO attack   : n=37  median=2.1 ms  p95=8.0 ms  max=23.7 ms  status={200: 37}
+Attack: one 150 MB body -> 422, answered in 691 ms
+Victim health DURING attack    : n=27  median=2.2 ms  p95=351.0 ms  max=568.9 ms  status={200: 27}
+Victim health with NO attack   : n=37  median=2.2 ms  p95=6.1 ms  max=25.8 ms  status={200: 37}
+Attack: 3000 /check requests, 300 at once, 22.3 s -> {200: 2998, 'ReadError': 2}
+        attacker median wait 1425 ms
+Victim health DURING attack    : n=377  median=3.0 ms  p95=30.7 ms  max=805.2 ms  status={200: 377}
+--- run 3
+Victim health with NO attack   : n=37  median=2.2 ms  p95=5.3 ms  max=23.1 ms  status={200: 37}
+Attack: one 150 MB body -> 422, answered in 658 ms
+Victim health DURING attack    : n=26  median=2.2 ms  p95=380.1 ms  max=571.8 ms  status={200: 26}
+Victim health with NO attack   : n=37  median=2.2 ms  p95=5.4 ms  max=24.7 ms  status={200: 37}
+Attack: 3000 /check requests, 300 at once, 15.8 s -> {200: 3000}
+        attacker median wait 942 ms
+Victim health DURING attack    : n=235  median=5.4 ms  p95=52.1 ms  max=1158.9 ms  status={200: 235}
+########## DOS_DEFENCE=on
+--- run 1
+Victim health with NO attack   : n=37  median=2.1 ms  p95=7.9 ms  max=25.1 ms  status={200: 37}
+Attack: one 150 MB body -> ReadError (server closed the connection early), answered in 24 ms
+Victim health DURING attack    : n=25  median=2.1 ms  p95=18.1 ms  max=24.6 ms  status={200: 25}
+Victim health with NO attack   : n=37  median=2.1 ms  p95=5.8 ms  max=27.7 ms  status={200: 37}
+Attack: 3000 /check requests, 300 at once, 25.2 s -> {503: 359, 200: 2641}
+        attacker median wait 1355 ms
+Victim health DURING attack    : n=475  median=2.2 ms  p95=9.7 ms  max=24.1 ms  status={200: 475}
+--- run 2
+Victim health with NO attack   : n=38  median=2.1 ms  p95=3.8 ms  max=22.9 ms  status={200: 38}
+Attack: one 150 MB body -> ReadError (server closed the connection early), answered in 23 ms
+Victim health DURING attack    : n=25  median=2.1 ms  p95=17.6 ms  max=24.0 ms  status={200: 25}
+Victim health with NO attack   : n=38  median=2.0 ms  p95=4.0 ms  max=24.4 ms  status={200: 38}
+Attack: 3000 /check requests, 300 at once, 20.1 s -> {503: 281, 200: 2719}
+        attacker median wait 1090 ms
+Victim health DURING attack    : n=371  median=3.1 ms  p95=15.0 ms  max=29.3 ms  status={200: 371}
+--- run 3
+Victim health with NO attack   : n=37  median=2.2 ms  p95=9.3 ms  max=28.1 ms  status={200: 37}
+Attack: one 150 MB body -> ReadError (server closed the connection early), answered in 24 ms
+Victim health DURING attack    : n=25  median=2.3 ms  p95=23.1 ms  max=31.9 ms  status={200: 25}
+Victim health with NO attack   : n=37  median=2.2 ms  p95=5.3 ms  max=24.1 ms  status={200: 37}
+Attack: 3000 /check requests, 300 at once, 22.7 s -> {503: 309, 200: 2691}
+        attacker median wait 1261 ms
+Victim health DURING attack    : n=421  median=2.8 ms  p95=13.3 ms  max=71.9 ms  status={200: 421}

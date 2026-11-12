@@ -1,10 +1,6 @@
-.venv/
-.test_venv/
+.env
 __pycache__/
 *.pyc
-.env
-model.pkl
-*.pkl
-*.csv
-
-.vscode/
+.venv/
+venv/
+node_modules/

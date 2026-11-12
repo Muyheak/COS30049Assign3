@@ -1,0 +1,5 @@
+# Attack scripts, tests and auditing
+-r requirements.txt
+httpx==0.28.1
+pip-audit==2.7.3
+pytest==9.2.0

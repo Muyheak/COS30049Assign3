@@ -1,0 +1,6 @@
+variant     shown as                                      verdict     p(phish)  normalised?
+original    https://kucoinloginhua.webflow.io/            phishing       0.709  False
+homoglyph   https://kuсоіnӏоgіnһuа.ԝеbfӏоԝ.іо/            phishing       0.709  True
+zero_width  https://kucoinlo​ginhua.webflow.io/           phishing       0.709  True
+fullwidth   https://kucoinloginhua．webflow．io/            phishing       0.709  True
+punycode    https://xn--kungnu-8nf1ib1a6ud82k4h.xn--bf-m  phishing       0.709  True

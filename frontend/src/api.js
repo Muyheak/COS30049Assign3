@@ -1,35 +1,39 @@
 // All back-end calls live in this one file.
 
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 export async function checkUrl(url) {
   let response;
   try {
-    response = await fetch(`${API_URL}/predict`, {
+    response = await fetch(`${API_URL}/api/v1/check`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     });
-  } catch (networkErr) {
-    throw new Error("Could not reach the server, please try again.");
+  } catch {
+    throw new Error("Could not reach the server. Please try again.");
   }
 
+  if (response.status === 503) {
+    throw new Error("Server is busy. Please wait a moment and try again.");
+  }
   if (response.status === 429) {
-    throw new Error("Too many requests, please wait a minute and try again.");
+    throw new Error("Too many requests. Please wait a minute and try again.");
   }
-
   if (response.status === 422) {
     throw new Error("Please enter a valid URL.");
   }
-
+  if (response.status === 413) {
+    throw new Error("URL is too long.");
+  }
   if (!response.ok) {
-    throw new Error("Could not check this URL, please try again.");
+    throw new Error("Could not check this URL. Please try again.");
   }
 
   const data = await response.json();
   return {
-    url,
-    label: data.label === "1" ? "phishing" : "legitimate",
+    url: data.normalised_url || url,
+    label: data.label,       // "phishing" | "legitimate"
     confidence: data.confidence,
   };
 }
