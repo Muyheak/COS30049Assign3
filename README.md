@@ -67,6 +67,13 @@ python ../attacks/evasion_attack.py ../path/to/features_combined.csv.gz
 | python-dotenv | 1.2.4 | *dev:* httpx 0.28.1, pytest 9.2.0, pip-audit 2.7.3 | |
 
 Front-end versions are pinned by `frontend/package-lock.json` (`npm ci` installs exactly those).
+| Front-end package | Version | Package | Version |
+|---|---|---|---|
+| react | 19.3.1 | @mui/material | 5.18.0 |
+| react-dom | 19.3.1 | @mui/icons-material | 5.18.0 |
+| react-scripts | 5.0.1 | @emotion/react | 11.14.0 |
+| react-router-dom | 6.30.6 | @emotion/styled | 11.14.1 |
+| recharts | 2.15.4 | | |
 
 ---
 
@@ -137,6 +144,7 @@ Unknown paths return 404, wrong methods 405 and malformed JSON 422, all in this 
 | `src/pages/NotFound.js` | 404 page for unknown addresses |
 | `src/components/Reviews.js` | Sample reviews plus a form; visitor reviews are saved in that browser only (localStorage) |
 
+The front end is built with React (Meta Open Source, 2026), Material UI (MUI, 2026) and Recharts (Recharts, 2026).
 React text rendering only, with no `dangerouslySetInnerHTML`. Checked URLs are shown as plain text, never as links. Every input has a label, controls work by keyboard, and the charts have a text equivalent plus a keyboard-usable list. The layout is responsive down to phone width. Session history lives in memory and clears on refresh. The three sample reviews were written by us for demonstration.
 
 ---
@@ -260,7 +268,9 @@ cd frontend && npm audit
 | Missing CSP / X-Content-Type-Options / anti-clickjacking headers | Present | Fixed (headers middleware) |
 | Server banner disclosure | Present | Fixed |
 | `/docs` CSP allows `'unsafe-inline'` scripts and styles | n/a | Accepted: Swagger UI starts from an inline script and uses inline styles. `/docs` takes no user input, and every API response has `default-src 'none'` |
-| ZAP / npm audit findings | *(fill in)* | *(fill in)* |
+| Front end: `react-scripts` build and test tooling (jest, jsdom, webpack-dev-server, postcss, svgo, workbox, serialize-javascript, node-forge, underscore and their dependencies) | Present: `npm audit --omit=dev` reports 37 (16 low, 8 moderate, 13 high). `npm ls` shows each one comes from `react-scripts` | Accepted: these packages run on the developer's machine to build, test or serve the app (for example `webpack-dev-server` only runs under `npm start`) and are not part of the production bundle. `npm audit fix --force` offers no usable fix (it proposes `react-scripts@0.0.0`). Create React App is no longer maintained; moving to Vite is listed in section 6 |
+| Front end: `react-router-dom` 6.30.6, 2 moderate advisories (open redirect via `<Link>` / `useNavigate`; deserialisation in server-side rendering) | Present | Not exploitable here: the only link targets in our code are the fixed string `/` (checked with `grep`), nothing uses `useNavigate`, and the app is client-rendered with no server-side rendering. Fixed in v7, a breaking upgrade we did not make this late |
+| Back end: ZAP baseline scan | *(Christopher to fill in)* | *(Christopher to fill in)* |
 
 **What it costs.** Upgrading Starlette across a major version risked breaking changes. We re-ran the full test suite and every attack afterwards to confirm nothing broke. The strict CSP means the API can never be used to serve a page, which is fine because it only serves JSON.
 
@@ -334,7 +344,8 @@ The model then sees the same features as for the undisguised URL.
 - **Session history is lost on refresh.** It is kept in memory only, and capped at the 20 most recent checks.
 - **Placeholder contact details.** The email and phone number in the footer are placeholders.
 - **No automated front-end tests.** We tested the interface by hand, including keyboard use and a phone-sized window.
-- - **No warning when a URL was altered.** For URLs with look-alike characters, the result card shows the cleaned version without saying it was changed. A visible notice based on `unicode_normalised` would be the next step.
+- **No warning when a URL was altered.** For URLs with look-alike characters, the result card shows the cleaned version without saying it was changed. A visible notice based on `unicode_normalised` would be the next step.
+- **Front-end tooling is unmaintained.** Create React App is no longer maintained, and `npm audit` reports 37 findings in its build tooling with no patched release. The next step would be moving to Vite and upgrading `react-router-dom` to v7.
 
 ---
 
@@ -345,6 +356,10 @@ Davis, M. and Suignard, M. (2023) *Unicode Technical Standard #39: Unicode Secur
 Gabrilovich, E. and Gontmakher, A. (2002) 'The homograph attack', *Communications of the ACM*, 45(2), p. 128.
 
 Le Pochat, V., Van Goethem, T., Tajalizadehkhoob, S., Korczyński, M. and Joosen, W. (2019) 'Tranco: a research-oriented top sites ranking hardened against manipulation', in *Proceedings of the Network and Distributed System Security Symposium (NDSS)*. San Diego: Internet Society.
+
+Meta Open Source (2026) *React documentation*. Available at: https://react.dev/ (Accessed: 28 October 2026).
+
+MUI (2026) *Material UI documentation*. Available at: https://mui.com/material-ui/ (Accessed: 28 October 2026).
 
 OWASP Foundation (2021) *OWASP Top 10: 2021*. Available at: https://owasp.org/Top10/ (Accessed: 11 November 2026).
 
@@ -358,7 +373,11 @@ Python Packaging Authority (2026) *pip-audit*. Available at: https://github.com/
 
 Ramírez, S. (2026) *FastAPI documentation*. Available at: https://fastapi.tiangolo.com/ (Accessed: 11 November 2026).
 
+Recharts (2026) *Recharts documentation*. Available at: https://recharts.org/ (Accessed: 1 November 2026).
+
 Whistler, K. (ed.) (2024) *Unicode Standard Annex #15: Unicode Normalization Forms*. Unicode Consortium. Available at: https://www.unicode.org/reports/tr15/ (Accessed: 11 November 2026).
+
+
 
 <!-- TODO: add the base dataset citation exactly as in our Assignment 2 report (malicious_phish.csv). -->
 
@@ -366,7 +385,6 @@ Whistler, K. (ed.) (2024) *Unicode Standard Annex #15: Unicode Normalization For
 
 ## 8. Use of generative AI
 
-<!-- TODO: each member should edit this so it is accurate for their own part. -->
 We used **Claude (Anthropic)** for the security part and frontend of this assignment:
 - drafting the threat model;
 - writing the security middleware (`app/security/`), the error handling, the tests and the attack/measurement scripts in `attacks/`;
