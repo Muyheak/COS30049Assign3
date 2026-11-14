@@ -252,7 +252,13 @@ Baseline victim latency with no attack: median ≈ 2.2 ms.
 - No debug mode. `/redoc` is disabled because it isn't used. Errors never include stack traces.
 
 **ZAP and npm audit, run on our own machine:**
-<!-- TODO: paste the results here after running them. -->
+The OWASP ZAP 2.17.0 baseline scan was run against the running API at  `http://127.0.0.1:8000/api/v1/health`. The report ('results/zap_baseline.xml'), shows no alerts on the target. 
+
+```xml
+<site name="http://127.0.0.1:8000" host="127.0.0.1" port="8000" ssl="false">
+    <alerts>
+    </alerts>
+</site>
 
 ```bash
 # OWASP ZAP baseline scan of the running API (Docker)
@@ -270,7 +276,7 @@ cd frontend && npm audit
 | `/docs` CSP allows `'unsafe-inline'` scripts and styles | n/a | Accepted: Swagger UI starts from an inline script and uses inline styles. `/docs` takes no user input, and every API response has `default-src 'none'` |
 | Front end: `react-scripts` build and test tooling (jest, jsdom, webpack-dev-server, postcss, svgo, workbox, serialize-javascript, node-forge, underscore and their dependencies) | Present: `npm audit --omit=dev` reports 37 (16 low, 8 moderate, 13 high). `npm ls` shows each one comes from `react-scripts` | Accepted: these packages run on the developer's machine to build, test or serve the app (for example `webpack-dev-server` only runs under `npm start`) and are not part of the production bundle. `npm audit fix --force` offers no usable fix (it proposes `react-scripts@0.0.0`). Create React App is no longer maintained; moving to Vite is listed in section 6 |
 | Front end: `react-router-dom` 6.30.6, 2 moderate advisories (open redirect via `<Link>` / `useNavigate`; deserialisation in server-side rendering) | Present | Not exploitable here: the only link targets in our code are the fixed string `/` (checked with `grep`), nothing uses `useNavigate`, and the app is client-rendered with no server-side rendering. Fixed in v7, a breaking upgrade we did not make this late |
-| Back end: ZAP baseline scan | *(Christopher to fill in)* | *(Christopher to fill in)* |
+| Back end: ZAP baseline scan | Present | **No alerts** 3 endponts discovered, zero warning and faails ('results/zap_baseline.xml') |
 
 **What it costs.** Upgrading Starlette across a major version risked breaking changes. We re-ran the full test suite and every attack afterwards to confirm nothing broke. The strict CSP means the API can never be used to serve a page, which is fine because it only serves JSON.
 
@@ -377,9 +383,14 @@ Recharts (2026) *Recharts documentation*. Available at: https://recharts.org/ (A
 
 Whistler, K. (ed.) (2024) *Unicode Standard Annex #15: Unicode Normalization Forms*. Unicode Consortium. Available at: https://www.unicode.org/reports/tr15/ (Accessed: 11 November 2026).
 
+**Datasets** 
 
 
-<!-- TODO: add the base dataset citation exactly as in our Assignment 2 report (malicious_phish.csv). -->
+https://www.kaggle.com/datasets/quangnguynv/phishtank-phishingurl-valid-dataset
+
+https://tranco-list.eu/list/56WKN/1000000
+
+
 
 ---
 
