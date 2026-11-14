@@ -42,8 +42,7 @@ npm ci
 npm start                       # http://localhost:3000
 ```
 
-The front end calls `http://localhost:8000/api/v1`. The back end only accepts requests from the origin in `ALLOWED_ORIGINS` (default `http://localhost:3000`). If the front end runs on a different port, change that variable.
-The front end calls `http://localhost:8000/api/v1/check`. The address comes from `REACT_APP_API_URL` in `frontend/.env`; `cp .env.example .env` is optional because the code falls back to `http://localhost:8000`. If the back end runs on another port, change that variable and `ALLOWED_ORIGINS`.
+The front end calls `http://localhost:8000/api/v1/check`. The address comes from `REACT_APP_API_URL` in `frontend/.env`; `cp .env.example .env` is optional because the code falls back to `http://localhost:8000`. The back end only accepts requests from the origin in `ALLOWED_ORIGINS` (default `http://localhost:3000`). If the back end runs on a different port, change `REACT_APP_API_URL`; if the front end does, change `ALLOWED_ORIGINS`.
 
 ### Tests and attack scripts (optional)
 
@@ -128,7 +127,7 @@ Unknown paths return 404, wrong methods 405 and malformed JSON 422, all in this 
 
 | File | Role |
 |---|---|
-| `src/api.js` | The only file that calls the back end; maps status codes (503, 429, 422, 413) to friendly messages |
+| `src/api.js` | The only file that calls the back end. It maps status codes (503, 422, 413) to friendly messages. 429 is also handled, in case a rate limit is added later; the back end does not currently return it |
 | `src/pages/Home.js` | Holds state (loading, result, error, session history) and lays out the page |
 | `src/components/UrlForm.js` | Input with validation before sending (empty, over 2,048 characters, spaces) |
 | `src/components/ResultCard.js` | Verdict and confidence as the largest element on screen |
@@ -331,6 +330,10 @@ The model then sees the same features as for the undisguised URL.
 - **The model is weak.** It has 62% recall on phishing in our held-out split, and some obvious phishing URLs score as legitimate. Accuracy isn't marked here, but a gradient-boosted model or character n-gram features would be the next step.
 - **Distributed floods** need protection upstream (a CDN or the hosting provider).
 - **Mixed-script hosts** (Latin plus Cyrillic in one label) are themselves strong evidence of phishing. Adding a "mixed script" feature and retraining would let the model use that signal, not just undo the disguise.
+- **Reviews are not shared between visitors.** Reviews a visitor adds are stored in that browser only (localStorage). Sharing them would need a back-end endpoint with size limits, rate limiting and storage, which we did not build. The three sample reviews were written by us.
+- **Session history is lost on refresh.** It is kept in memory only, and capped at the 20 most recent checks.
+- **Placeholder contact details.** The email and phone number in the footer are placeholders.
+- **No automated front-end tests.** We tested the interface by hand, including keyboard use and a phone-sized window.
 
 ---
 
@@ -368,5 +371,8 @@ We used **Claude (Anthropic)** for the security part of this assignment:
 - writing the security middleware (`app/security/`), the error handling, the tests and the attack/measurement scripts in `attacks/`;
 - running the measurements;
 - drafting this README.
+- draft react component
+- debug errors
+- write and explain code comments
 
 We reviewed, ran and tested all of this code ourselves, re-ran every measurement on our own machine before recording, and can explain every part of it in the video. The A2 feature-extraction code in `app/features.py` is our own work from Assignment 2, copied unchanged.
