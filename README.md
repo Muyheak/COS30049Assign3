@@ -367,7 +367,7 @@ Whistler, K. (ed.) (2024) *Unicode Standard Annex #15: Unicode Normalization For
 ## 8. Use of generative AI
 
 <!-- TODO: each member should edit this so it is accurate for their own part. -->
-We used **Claude (Anthropic)** for the security part of this assignment:
+We used **Claude (Anthropic)** for the security part and frontend of this assignment:
 - drafting the threat model;
 - writing the security middleware (`app/security/`), the error handling, the tests and the attack/measurement scripts in `attacks/`;
 - running the measurements;
