@@ -43,7 +43,7 @@ npm start                       # http://localhost:3000
 ```
 
 The front end calls `http://localhost:8000/api/v1`. The back end only accepts requests from the origin in `ALLOWED_ORIGINS` (default `http://localhost:3000`). If the front end runs on a different port, change that variable.
-<!-- TODO Ellie: confirm these commands and the env variable for the API URL match the final front end. -->
+The front end calls `http://localhost:8000/api/v1/check`. The address comes from `REACT_APP_API_URL` in `frontend/.env`; `cp .env.example .env` is optional because the code falls back to `http://localhost:8000`. If the back end runs on another port, change that variable and `ALLOWED_ORIGINS`.
 
 ### Tests and attack scripts (optional)
 
@@ -91,7 +91,7 @@ flowchart LR
         SK --> N["normalize() + extract_features()<br/>identical to A2 training"]
         N --> M[("Random forest<br/>loaded once at start-up<br/>SHA-256 verified")]
     end
-    M -->|"{label, confidence, features}"| FE
+    M -->|"{label, confidence, phishing_probability, features, unicode_normalised, normalised_url}"| FE
 ```
 
 | File | Role |
@@ -112,7 +112,7 @@ flowchart LR
 | Method | Path | Purpose | Success | Errors |
 |---|---|---|---|---|
 | POST | `/api/v1/check` | Classify one URL (creates a new computation, with a body) | 200 | 413, 422, 500, 503 |
-| GET | `/api/v1/model-info` | Feature names and limits, used to label the charts | 200 | 500 |
+| GET | `/api/v1/model-info` | Feature names and limits (available to clients; the current front end does not use it) | 200 | 500 |
 | GET | `/api/v1/health` | Liveness check | 200 | |
 
 Every error has the same shape:
@@ -123,6 +123,22 @@ Every error has the same shape:
 ```
 
 Unknown paths return 404, wrong methods 405 and malformed JSON 422, all in this format. Unexpected exceptions are logged on the server and returned as a generic 500 with no internal details (`tests/test_api.py::test_unexpected_error_hides_details`).
+
+### Front end (React + MUI v5)
+
+| File | Role |
+|---|---|
+| `src/api.js` | The only file that calls the back end; maps status codes (503, 429, 422, 413) to friendly messages |
+| `src/pages/Home.js` | Holds state (loading, result, error, session history) and lays out the page |
+| `src/components/UrlForm.js` | Input with validation before sending (empty, over 2,048 characters, spaces) |
+| `src/components/ResultCard.js` | Verdict and confidence as the largest element on screen |
+| `src/components/ConfidenceChart.js` | Chart 1: donut of phishing vs legitimate probability for the latest check |
+| `src/components/HistoryPanel.js` | Chart 2: dot plot of every check this session, with filter and click-for-details |
+| `src/components/ErrorNotFound.js` | Crash fallback page (the class inside is called `ErrorBoundary`) |
+| `src/pages/NotFound.js` | 404 page for unknown addresses |
+| `src/components/Reviews.js` | Sample reviews plus a form; visitor reviews are saved in that browser only (localStorage) |
+
+React text rendering only, with no `dangerouslySetInnerHTML`. Checked URLs are shown as plain text, never as links. Every input has a label, controls work by keyboard, and the charts have a text equivalent plus a keyboard-usable list. The layout is responsive down to phone width. Session history lives in memory and clears on refresh. The three sample reviews were written by us for demonstration.
 
 ---
 
@@ -301,7 +317,7 @@ The model then sees the same features as for the undisguised URL.
 
 **What it costs.**
 - **False positives:** on 20,000 held-out legitimate URLs, the false-positive rate is **2.64% without vs 2.63% with** the defence (682 of them were altered by normalisation). No measurable cost.
-- **Information loss for genuine international domains:** `münchen.de` is analysed as `munchen.de`, and `россия.рф` as a meaningless mix of letters. The verdict for these is based on a folded form, not what the user typed. We accept this because the model's features are ASCII-only anyway. The response flags it with `unicode_normalised: true` so the front end can tell the user.
+- **Information loss for genuine international domains:** `münchen.de` is analysed as `munchen.de`, and `россия.рф` as a meaningless mix of letters. The verdict for these is based on a folded form, not what the user typed. We accept this because the model's features are ASCII-only anyway. The response flags this with `unicode_normalised: true` and returns the cleaned URL as `normalised_url`. The front end shows that cleaned URL as "URL checked".
 - **Speed:** about 15 µs per URL, under 1% of the ~2 ms inference time.
 
 **Limits.**
