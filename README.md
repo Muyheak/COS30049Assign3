@@ -316,7 +316,7 @@ The model then sees the same features as for the undisguised URL.
 
 **What it costs.**
 - **False positives:** on 20,000 held-out legitimate URLs, the false-positive rate is **2.64% without vs 2.63% with** the defence (682 of them were altered by normalisation). No measurable cost.
-- **Information loss for genuine international domains:** `münchen.de` is analysed as `munchen.de`, and `россия.рф` as a meaningless mix of letters. The verdict for these is based on a folded form, not what the user typed. We accept this because the model's features are ASCII-only anyway. The response flags this with `unicode_normalised: true` and returns the cleaned URL as `normalised_url`. The front end shows that cleaned URL as "URL checked".
+- **Information loss for genuine international domains:** `münchen.de` is analysed as `munchen.de`, and `россия.рф` as a meaningless mix of letters. The verdict for these is based on a folded form, not what the user typed. We accept this because the model's features are ASCII-only anyway. The response flags this with `unicode_normalised: true` and returns the cleaned URL as `normalised_url`. The front end shows that cleaned URL as "URL checked"; it does not currently show a separate warning that the URL was altered.
 - **Speed:** about 15 µs per URL, under 1% of the ~2 ms inference time.
 
 **Limits.**
@@ -334,6 +334,7 @@ The model then sees the same features as for the undisguised URL.
 - **Session history is lost on refresh.** It is kept in memory only, and capped at the 20 most recent checks.
 - **Placeholder contact details.** The email and phone number in the footer are placeholders.
 - **No automated front-end tests.** We tested the interface by hand, including keyboard use and a phone-sized window.
+- - **No warning when a URL was altered.** For URLs with look-alike characters, the result card shows the cleaned version without saying it was changed. A visible notice based on `unicode_normalised` would be the next step.
 
 ---
 
