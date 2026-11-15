@@ -396,7 +396,7 @@ https://tranco-list.eu/list/56WKN/1000000
 
 ## 8. Use of generative AI
 
-We used **Claude (Anthropic)** for the security part and frontend of this assignment:
+We used **Claude (Anthropic)** for the security part, backend and frontend of this assignment:
 - drafting the threat model;
 - writing the security middleware (`app/security/`), the error handling, the tests and the attack/measurement scripts in `attacks/`;
 - running the measurements;
@@ -404,5 +404,6 @@ We used **Claude (Anthropic)** for the security part and frontend of this assign
 - draft react component
 - debug errors
 - write and explain code comments
+- learning
 
 We reviewed, ran and tested all of this code ourselves, re-ran every measurement on our own machine before recording, and can explain every part of it in the video. The A2 feature-extraction code in `app/features.py` is our own work from Assignment 2, copied unchanged.
